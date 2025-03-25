@@ -10,15 +10,12 @@ function getUserData(id) {
     db3: db3,
   };
 
-  const centralData = central(id);
+  const dbData = central(id).then((retrievedDbName) => {
+    return getFromDb(retrievedDbName);
+  });
   const vaultData = vault(id);
 
-  return Promise.all([centralData, vaultData])
-    .then(([retrievedDbName, vaultObj]) => {
-      const dbData = getFromDb(retrievedDbName);
-
-      return Promise.all([dbData, vaultObj]);
-    })
+  return Promise.all([dbData, vaultData])
     .then(([dbObj, vaultObj]) => {
       return {
         id: id,
