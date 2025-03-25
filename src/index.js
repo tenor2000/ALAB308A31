@@ -1,7 +1,7 @@
 // Importing database functions. DO NOT MODIFY THIS LINE.
 import { central, db1, db2, db3, vault } from "./databases.js";
 
-console.time("timer");
+console.time("Overall");
 
 function getUserData(id) {
   const dbs = {
@@ -10,47 +10,17 @@ function getUserData(id) {
     db3: db3,
   };
 
-  return central(id)
-    .then((retrievedDbName) => {
-      return getFromDb(retrievedDbName);
-    })
-    .then((retrievedPersonData) => {
-      return getFromVault(retrievedPersonData);
-    })
-    .catch((error) => {
-      console.log("Error: ", error);
-      return null;
-    });
+  const centralData = central(id);
+  const vaultData = vault(id);
 
-  // helper functions
-  function getFromDb(dbName) {
-    switch (dbName) {
-      case "db1":
-        return db1(id).then((data) => ({
-          username: data.username,
-          website: data.website,
-          company: data.company,
-        }));
-      case "db2":
-        return db2(id).then((data) => ({
-          username: data.username,
-          website: data.website,
-          company: data.company,
-        }));
-      case "db3":
-        return db3(id).then((data) => ({
-          username: data.username,
-          website: data.website,
-          company: data.company,
-        }));
-      default:
-        throw new Error("database not found");
-    }
-  }
+  return Promise.all([centralData, vaultData])
+    .then(([retrievedDbName, vaultObj]) => {
+      const dbData = getFromDb(retrievedDbName);
 
-  function getFromVault(dbObj) {
-    return vault(id).then((vaultObj) => {
-      const finalObject = {
+      return Promise.all([dbData, vaultObj]);
+    })
+    .then(([dbObj, vaultObj]) => {
+      return {
         id: id,
         name: vaultObj.name,
         username: dbObj.username,
@@ -60,9 +30,19 @@ function getUserData(id) {
         website: dbObj.website,
         company: dbObj.company,
       };
-
-      return finalObject;
+    })
+    .catch((error) => {
+      console.log("Error: ", error);
+      return null;
     });
+
+  // helper function
+  function getFromDb(dbName) {
+    return dbs[dbName](id).then((data) => ({
+      username: data.username,
+      website: data.website,
+      company: data.company,
+    }));
   }
 }
 
@@ -83,4 +63,4 @@ userData.forEach((person) => {
   console.log(person);
 });
 
-console.timeEnd("timer");
+console.timeEnd("Overall");
