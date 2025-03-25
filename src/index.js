@@ -1,6 +1,8 @@
 // Importing database functions. DO NOT MODIFY THIS LINE.
 import { central, db1, db2, db3, vault } from "./databases.js";
 
+console.time("timer");
+
 function getUserData(id) {
   const dbs = {
     db1: db1,
@@ -68,8 +70,10 @@ const usersQuery = [
   getUserData(1),
   getUserData(2),
   getUserData(3),
+  getUserData(6),
   getUserData(7),
-  getUserData("dug"),
+  getUserData(8),
+  getUserData(9),
 ];
 const userData = await Promise.all(usersQuery).then((results) => {
   return results;
@@ -78,3 +82,5 @@ const userData = await Promise.all(usersQuery).then((results) => {
 userData.forEach((person) => {
   console.log(person);
 });
+
+console.timeEnd("timer");
